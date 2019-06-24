@@ -9,4 +9,8 @@ defmodule TodoNotesWeb.ApiView do
     %{tasks: tasks}
   end
 
+  def render("error.json", %{:error => error}) do
+    %{error: error}
+  end
+
 end

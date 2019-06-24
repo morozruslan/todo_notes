@@ -29,6 +29,9 @@ defmodule TodoNotesWeb.ApiController do
     with :ok <- add(id, task)
       do
       render(conn, "success.json", %{status: "success"})
+    else
+      error ->
+        render(conn, "error.json", %{error: error})
     end
   end
 
@@ -41,6 +44,9 @@ defmodule TodoNotesWeb.ApiController do
     with :ok <- update(id, task, status)
       do
       render(conn, "success.json", %{status: "success"})
+    else
+      error ->
+        render(conn, "error.json", %{error: error})
     end
   end
 
@@ -53,10 +59,13 @@ defmodule TodoNotesWeb.ApiController do
     with :ok <- delete(id)
       do
       render(conn, "success.json", %{status: "success"})
+    else
+      error ->
+        render(conn, "error.json", %{error: error})
     end
   end
 
-  def get_all_tasks do
+  defp get_all_tasks do
     {:ok, ref} = :dets.open_file(:tasks, [])
     all_rows = :dets.select(ref , :ets.fun2ms(fn(x) -> x end))
     all_tasks = Enum.map(all_rows, fn {_, x} -> x end)
@@ -64,26 +73,46 @@ defmodule TodoNotesWeb.ApiController do
     {:ok, all_tasks}
   end
 
-  def add(id, task) do
+  defp add(id, task) do
     {:ok, ref} = :dets.open_file(:tasks, [])
-    :dets.insert_new(ref, {id, %{:id => id, :task => task, :status => "to do"}})
-    :dets.close(ref)
-    :ok
+    if if_exist(id, ref) do
+      :already_exists
+    else
+      :dets.insert_new(ref, {id, %{:id => id, :task => task, :status => "to do"}})
+      :dets.close(ref)
+      :ok
+    end
   end
 
-  def update(id, task, status) do
+  defp update(id, task, status) do
     {:ok, ref} = :dets.open_file(:tasks, [])
-    :dets.insert(ref, {String.to_integer(id), %{:id => id, :task => task, :status => status}})
-    :dets.close(ref)
-    :ok
+    if if_exist(String.to_integer(id), ref) do
+      :dets.insert(ref, {String.to_integer(id), %{:id => id, :task => task, :status => status}})
+      :dets.close(ref)
+      :ok
+    else
+      :not_found
+    end
   end
 
-  def delete(id) do
+  defp delete(id) do
     {:ok, ref} = :dets.open_file(:tasks, [])
-    :dets.delete(ref, String.to_integer(id))
-    :dets.close(ref)
-    :ok
+    if if_exist(String.to_integer(id), ref) do
+      :dets.delete(ref, String.to_integer(id))
+      :dets.close(ref)
+      :ok
+    else
+      :not_found
+    end
   end
 
+  defp if_exist(id, ref) do
+    case :dets.lookup(ref , id) do
+      [{_, _}] ->
+        :true
+      _ ->
+        :false
+    end
+  end
 
 end

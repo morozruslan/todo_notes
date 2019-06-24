@@ -6,8 +6,12 @@ To start application:
   * Start Phoenix endpoint with `mix phx.server`
 
 # API
- * GET localhost:4000/api - get tasks list
+ *  Get tasks list
  
+    method: GET
+
+    url: localhost:4000/api
+
     answer: {
                 "tasks": [
                     {
@@ -23,7 +27,15 @@ To start application:
                 ]
             }
             
- * POST localhost:4000/api - add new task
+    error_answer: {
+                      "error": "already_exists"
+                  }
+
+ *  Add new task
+
+    method: POST
+
+    url: localhost:4000/api
  
     body: {"id" : 2, "task" : "do 2"}
     
@@ -31,7 +43,15 @@ To start application:
                 "status": "success"
             }
             
- * PUT localhost:4000/api/:id - update task
+    error_answer: {
+                      "error": "already_exists"
+                  }
+
+ *  Update task
+
+    method: PUT
+
+    url: localhost:4000/api/:id
       
     body: {"id" : 1, "task" : "do 1", "status" : "done"}
     
@@ -39,8 +59,20 @@ To start application:
                 "status": "success"
             }
             
- * DELETE localhost:4000/api/:id - delete task
+    error_answer: {
+                      "error": "not_found"
+                  }
+
+ * Delete task
     
-    answer: {
+   method: DELETE
+
+   url: localhost:4000/api/:id
+
+   answer: {
                 "status": "success"
             }
+
+   error_answer: {
+                     "error": "not_found"
+                 }
